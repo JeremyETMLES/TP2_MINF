@@ -93,6 +93,9 @@
           <itemPath>../../../../../../../../framework/system/system.h</itemPath>
         </logicalFolder>
       </logicalFolder>
+      <itemPath>../src/GesFifoTh32.h</itemPath>
+      <itemPath>../src/Mc32CalCrc16.h</itemPath>
+      <itemPath>../src/Mc32gest_RS232.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -167,6 +170,9 @@
           </logicalFolder>
         </logicalFolder>
       </logicalFolder>
+      <itemPath>../src/GesFifoTh32.c</itemPath>
+      <itemPath>../src/Mc32CalCrc16.c</itemPath>
+      <itemPath>../src/Mc32gest_RS232.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

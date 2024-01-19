@@ -97,7 +97,7 @@ void GPWM_GetSettings(S_pwmSettings *pData)
 // Entrées:- pointeur: S_pwmSettings: pData
 // Sorties: -
 //-------------------------------------------
-void GPWM_DispSettings(S_pwmSettings *pData)
+void GPWM_DispSettings(S_pwmSettings *pData, int Remote)
 { 
     static uint8_t i = 0; 
     
@@ -106,9 +106,8 @@ void GPWM_DispSettings(S_pwmSettings *pData)
     {
         lcd_ClearLine(2);
         lcd_ClearLine(3);
+        lcd_ClearLine(4);
         
-        lcd_gotoxy(1,1); 
-        printf_lcd("TP1 PWM 2023-2024");
         lcd_gotoxy(1,2); 
         printf_lcd("SpeedSetting");
         lcd_gotoxy(1,3); 
@@ -117,6 +116,16 @@ void GPWM_DispSettings(S_pwmSettings *pData)
         printf_lcd("Angle");
         
         i++;
+    }
+    
+    lcd_gotoxy(1,1);
+    if(Remote)
+    {
+        printf_lcd("Remote Settings");   
+    }
+    else
+    {
+        printf_lcd("Local Settings ");
     }
     
     //Affiche les valeurs de vitesse et d'angle sur le LCD

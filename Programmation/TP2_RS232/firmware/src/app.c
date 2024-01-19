@@ -137,6 +137,10 @@ void APP_Initialize ( void )
 
 void APP_Tasks ( void )
 {
+    uint8_t i = 0;
+    uint8_t CommStatus = 0;
+    S_pwmSettings PWMDataToSend;
+    
     /* Check the application's current state. */
     switch ( appData.state )
     {
@@ -148,13 +152,17 @@ void APP_Tasks ( void )
             //Initialiser le lcd
             lcd_init(); 
             lcd_bl_on();
-            printf_lcd("TP1 Pwm 2023-2024");
-            lcd_gotoxy(1,2); 
-            printf_lcd("Melissa Perret");
+            printf_lcd("Local Settings");
+            lcd_gotoxy(1,2);                  
+            printf_lcd("TP2 PWM&RS232 23-24");
             lcd_gotoxy(1,3); 
+            printf_lcd("Julien Decrausaz");
+            lcd_gotoxy(1,4); 
             printf_lcd("Jeremy Affolter");
             
             BSP_InitADC10(); //Initialisation de l'ADC 
+            
+            InitFifoComm(); // Initialisation de la FiFo
             
             LED_Off(); //Eteindre toutes les leds
 
@@ -169,6 +177,30 @@ void APP_Tasks ( void )
         
         case APP_STATE_SERVICE_TASKS:
         { 
+            // Réception param. remote
+            CommStatus = GetMessage(&PWMData);
+            // Lecture pot.
+            if (CommStatus == 0) // local ?
+            GPWM_GetSettings(&PWMData); // local
+            else
+            GPWM_GetSettings(&PWMDataToSend); // remote
+            // Affichage
+            GPWM_DispSettings(&PWMData, CommStatus );
+            // Execution PWM et gestion moteur
+            GPWM_ExecPWM(&PWMData);
+            
+            i++;
+            
+            if(i >= 5)
+            {
+                // Envoi valeurs
+                if (CommStatus == 0) // local ?
+                SendMessage(&PWMData); // local
+                else
+                SendMessage(&PWMDataToSend); // remote
+                i = 0;
+            }
+            
             APP_UpdateState(APP_STATE_WAIT); //Va dans l'état d'attente
             break;
         }
@@ -208,7 +240,6 @@ void LED_Off (void)
     BSP_LEDOff(BSP_LED_6);
     BSP_LEDOff(BSP_LED_7);
 }
- 
 
 /*******************************************************************************
  End of File

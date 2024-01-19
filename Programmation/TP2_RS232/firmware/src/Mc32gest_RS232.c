@@ -84,7 +84,7 @@ int GetMessage(S_pwmSettings *pData)
     
     
     // Gestion controle de flux de la réception
-    if(GetWriteSpace ( &descrFifoRX) >= (2*MESS_SIZE)) {
+    if( GetReadSize(&descrFifoRX) >= (2*MESS_SIZE)) {
         // autorise émission par l'autre
         RS232_RTS = 0;
     }
@@ -97,18 +97,38 @@ void SendMessage(S_pwmSettings *pData)
 {
     int8_t freeSize;
     
+    //================ CRC ==================//
+    uint16_t ValCrc16 = 0xFFFF;
+    
+    ValCrc16 = updateCRC16(ValCrc16, 0xAA);
+    ValCrc16 = updateCRC16(ValCrc16, pData->SpeedSetting);
+    ValCrc16 = updateCRC16(ValCrc16, pData->AngleSetting);
+    
+    //=======================================//
+    
+    
     // Traitement émission à introduire ICI
     // Formatage message et remplissage fifo émission
-    // ...
-    
-    
+    TxMess.Start  = 0xAA;
+    TxMess.Speed  = pData->SpeedSetting;
+    TxMess.Angle  = pData->AngleSetting;
+    TxMess.MsbCrc = ValCrc16 >> 8;
+    TxMess.LsbCrc = ValCrc16 & 0xFF;
+            
     // Gestion du controle de flux
     // si on a un caractère à envoyer et que CTS = 0
-    freeSize = GetReadSize(&descrFifoTX);
-    if ((RS232_CTS == 0) && (freeSize > 0))
+    freeSize = GetWriteSpace(&descrFifoTX);
+    if ((RS232_CTS == 0) && (freeSize >= MESS_SIZE))
     {
         // Autorise int émission    
-        PLIB_INT_SourceEnable(INT_ID_0, INT_SOURCE_USART_1_TRANSMIT);                
+        PLIB_INT_SourceEnable(INT_ID_0, INT_SOURCE_USART_1_TRANSMIT);
+        
+        //Depos des messages dans le fifo
+        PutCharInFifo (&descrFifoTX, TxMess.Start);     //Byte de start
+        PutCharInFifo (&descrFifoTX, TxMess.Speed);     //Byte pour vitesse
+        PutCharInFifo (&descrFifoTX, TxMess.Angle);     //Byte pour angle
+        PutCharInFifo (&descrFifoTX, TxMess.MsbCrc);    //Byte pour le MSB du CRC
+        PutCharInFifo (&descrFifoTX, TxMess.LsbCrc);    //Byte pour le LSB du CRC
     }
 }
 

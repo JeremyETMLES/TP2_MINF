@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root xmlns:nsd="http://structorizer.fisch.lu/" version="3.25-01" preRepeat="jusqu'à " postFor="à" preReturn="return" postForIn=" en " preWhile="tant que " output="écrire" input="lire" preFor="pour " preExit="exit" preLeave="leave" ignoreCase="true" preForIn="pour " stepFor=", pas = " text="&#34;GetMessage&#34;" comment="&#34;&#34;" color="ffffff" type="sub" style="nice">
+<root xmlns:nsd="http://structorizer.fisch.lu/" version="3.25-01" preRepeat="jusqu'à " postFor="à" preReturn="return" postForIn=" en " preWhile="tant que " output="écrire" input="lire" preFor="pour " preExit="exit" preLeave="leave" ignoreCase="true" preForIn="pour " stepFor=", pas = " text="&#34;GetMessage&#34;" comment="" color="ffffff" type="sub" style="nice">
 	<children>
-		<instruction text="&#34;Entrées: pointeur: pData&#34;,&#34;Sorties: uint8_t&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-		<instruction text="&#34;Variables:&#34;,&#34;static uint8_t: i = 10&#34;,&#34;uint8_t: lsb = 0; NbCharToRead = 0&#34;,&#34;uint16_t: crc = 0; ValCrc16 = 0xFFFF&#34;,&#34;S_pwmSettings: pDataTemporaire&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-		<instruction text="&#34;Sauvegarder la taille du message dans NbCharToRead&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-		<alternative text="&#34;SI(NbCharToRead &#62;= MESS_SIZE)&#34;" comment="&#34;&#34;" color="ffffff">
+		<instruction text="&#34;Entrées: pointeur: pData&#34;,&#34;Sorties: uint8_t&#34;" comment="" color="ffffff" rotated="0"></instruction>
+		<instruction text="&#34;Variables:&#34;,&#34;static entier nonsigné codé 8bits: i = 10&#34;,&#34;entier nonsigné codé 8bits: lsb = 0; NbCharToRead = 0&#34;,&#34;entier signé codé 8bits: debut = 0;&#34;,&#34;entier nonsigné codé 16bits: crc = 0; ValCrc16 = 0xFFFF&#34;,&#34;S_pwmSettings: pDataTemporaire&#34;" comment="" color="ffffff" rotated="0"></instruction>
+		<call text="&#34;Sauvegarder la taille du message dans NbCharToRead&#34;" comment="" color="00ccff"></call>
+		<alternative text="&#34;SI(NbCharToRead &#62;= MESS_SIZE)&#34;" comment="" color="ffffff">
 			<qTrue>
-				<alternative text="&#34;SI(Valeur reçue de la FIFO = 0xAA)&#34;" comment="&#34;&#34;" color="ffffff">
+				<call text="&#34;Récupérer la valeur reçue en la sauvegardant à l'adresse de debut&#34;" comment="" color="80ffff"></call>
+				<alternative text="&#34;SI(debut = 0xAA)&#34;" comment="" color="ffffff">
 					<qTrue>
-						<call text="&#34;Récupérer la valeur reçue et la sauvegarder dans vitesse dans pDataTemporaire&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<call text="&#34;Récupérer la valeur reçue et la sauvegarder dans angle dans pDataTemporaire&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<call text="&#34;Récupérer la valeur reçue et la sauvegarder dans crc&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<instruction text="&#34;Décaler CRC à gauche de 8&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-						<call text="&#34;Récupérer la valeur reçue et la sauvegarder dans lsb&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<instruction text="&#34;crc = crc + lsb&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-						<call text="&#34;ValCrc16 = updateCRC16(ValCrc16, 0xAA)&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<call text="&#34;ValCrc16 = updateCRC16(ValCrc16, vitesse de pDataTemporaire)&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<call text="&#34;ValCrc16 = updateCRC16(ValCrc16, angle de pDataTemporaire)&#34;" comment="&#34;&#34;" color="ffffff"></call>
-						<alternative text="&#34;SI(crc = ValCrc16)&#34;" comment="&#34;&#34;" color="ffffff">
+						<call text="&#34;Récupérer la valeur reçue en la sauvegardant à l'adresse de vitesse dans pDataTemporaire&#34;" comment="" color="80ffff"></call>
+						<call text="&#34;Récupérer la valeur reçue en la sauvegardant à l'adresse de angle dans pDataTemporaire&#34;" comment="" color="80ffff"></call>
+						<call text="&#34;Récupérer la valeur reçue en la sauvegardant à l'adresse de crc&#34;" comment="" color="80ffff"></call>
+						<instruction text="&#34;Décaler crc à gauche de 8&#34;" comment="" color="ffff80" rotated="0"></instruction>
+						<call text="&#34;Récupérer la valeur reçue en la sauvegardant à l'adresse de lsb&#34;" comment="" color="80ffff"></call>
+						<instruction text="&#34;crc = crc + lsb&#34;" comment="" color="ffff80" rotated="0"></instruction>
+						<call text="&#34;ValCrc16 = updateCRC16(ValCrc16, 0xAA)&#34;" comment="" color="0080ff"></call>
+						<call text="&#34;ValCrc16 = updateCRC16(ValCrc16, vitesse de pDataTemporaire)&#34;" comment="" color="0080ff"></call>
+						<call text="&#34;ValCrc16 = updateCRC16(ValCrc16, angle de pDataTemporaire)&#34;" comment="" color="0080ff"></call>
+						<alternative text="&#34;SI(crc = ValCrc16)&#34;" comment="" color="ffffff">
 							<qTrue>
-								<instruction text="&#34;pData = pDataTemporaire&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-								<instruction text="&#34;i = 0&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-								<instruction text="&#34;Retourner un 1&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+								<instruction text="&#34;pData = pDataTemporaire&#34;" comment="" color="ffff80" rotated="0"></instruction>
+								<instruction text="&#34;i = 0&#34;" comment="" color="ffff80" rotated="0"></instruction>
+								<instruction text="&#34;Retourner un 1&#34;" comment="" color="80ff80" rotated="0"></instruction>
 							</qTrue>
 							<qFalse>
 							</qFalse>
@@ -34,13 +35,14 @@
 			<qFalse>
 			</qFalse>
 		</alternative>
-		<alternative text="&#34;SI(i &#62;= 9)&#34;" comment="&#34;&#34;" color="ffffff">
+		<alternative text="&#34;SI(i &#62;= 9)&#34;" comment="" color="ffffff">
 			<qTrue>
-				<instruction text="&#34;Retourner un 0&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+				<instruction text="&#34;Retourner un 0&#34;" comment="" color="ff8080" rotated="0"></instruction>
+				<instruction text="" comment="" color="ffffff" rotated="0"></instruction>
 			</qTrue>
 			<qFalse>
-				<instruction text="&#34;Incrémenter i&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
-				<instruction text="&#34;Retourner un 1&#34;" comment="" color="ffffff" rotated="0"></instruction>
+				<instruction text="&#34;Incrémenter i&#34;" comment="" color="ffff80" rotated="0"></instruction>
+				<instruction text="&#34;Retourner un 1&#34;" comment="" color="80ff80" rotated="0"></instruction>
 			</qFalse>
 		</alternative>
 	</children>

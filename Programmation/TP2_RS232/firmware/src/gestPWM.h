@@ -35,7 +35,7 @@ extern uint8_t compteur;
 
 void GPWM_Initialize(S_pwmSettings *pData);
 void GPWM_GetSettings(S_pwmSettings *pData);	//Obtention vitesse et angle
-void GPWM_DispSettings(S_pwmSettings *pData);	//Affichage
+void GPWM_DispSettings(S_pwmSettings *pData, int Remote);	//Affichage
 void GPWM_ExecPWM(S_pwmSettings *pData);		//Execution PWM et gestion moteur.
 void GPWM_ExecPWMSoft(S_pwmSettings *pData);	//Execution PWM software.
 

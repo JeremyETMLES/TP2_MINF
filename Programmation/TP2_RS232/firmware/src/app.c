@@ -138,7 +138,7 @@ void APP_Initialize ( void )
 
 void APP_Tasks ( void )
 {
-    uint8_t i = 0;
+    static uint8_t i = 0;
     uint8_t CommStatus = 0;
     S_pwmSettings PWMDataToSend;
     

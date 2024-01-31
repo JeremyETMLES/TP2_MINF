@@ -59,7 +59,7 @@ S_fifo descrFifoTX;
 
 // Déclaration des constantes pour GetMessage
 #define INITCRC 0xFFFF
-#define STARTCHAR 0xAA
+//#define STARTCHAR 0xAA
 #define SIZEBYTE 8
 #define NBCYLE_MAX 10
 
@@ -85,7 +85,7 @@ int GetMessage(S_pwmSettings *pData)
     int commStatus = 0; // État de la communication
     static uint8_t i = NBCYLE_MAX;   // Compteur de cycle sans message
     uint8_t NbCharToRead = 0;   // Sauvegarde du nombre de caractères du message à lire
-    int16_t crc = 0;    // Sauvegarde de la valeur du CRC sur 16 bits
+    U_manip16 crc;    // Sauvegarde de la valeur du CRC sur 16 bits
     uint16_t ValCrc16 = INITCRC; // Variable de calcul du CRC sur 16 bits    
     
     // Lecture et décodage fifo réception
@@ -95,7 +95,8 @@ int GetMessage(S_pwmSettings *pData)
 	{
 		//Récupérer la valeur reçue en la sauvegardant à l'adresse de debut;
         GetCharFromFifo(&descrFifoRX, &RxMess.Start);
-		if (RxMess.Start == STARTCHAR)
+        //RxMess.Start = RxMess.Start ; 
+		if (RxMess.Start == STX_code)
 		{
             // Récupérer la valeur reçue en la sauvegardant à l'adresse de vitesse dans pDataTemporaire;
             GetCharFromFifo(&descrFifoRX, &RxMess.Speed);
@@ -104,32 +105,34 @@ int GetMessage(S_pwmSettings *pData)
             // Récupérer la valeur reçue en la sauvegardant à l'adresse de crc;
             GetCharFromFifo(&descrFifoRX, &RxMess.MsbCrc);
             // Décaler crc à gauche de 8;
-            crc = RxMess.MsbCrc << SIZEBYTE;
+            crc.val = RxMess.MsbCrc << SIZEBYTE;
             // Récupérer la valeur reçue en la sauvegardant à l'adresse de lsb;
             GetCharFromFifo(&descrFifoRX, &RxMess.LsbCrc);
-			crc = crc + RxMess.LsbCrc;
+			crc.shl.lsb = RxMess.LsbCrc;
             
             // Calcul du CRC
-			ValCrc16 = updateCRC16(ValCrc16, STARTCHAR);
+			ValCrc16 = updateCRC16(ValCrc16, STX_code);
 			ValCrc16 = updateCRC16(ValCrc16, RxMess.Speed);
 			ValCrc16 = updateCRC16(ValCrc16, RxMess.Angle);
             
             // Si le message est correcte
-			if (crc == ValCrc16)
+			if (crc.val == ValCrc16)
 			{
                 // Mise à jour de pData
                 pData->SpeedSetting = RxMess.Speed;
+                pData->absSpeed = abs(RxMess.Speed);
 				pData->AngleSetting = RxMess.Angle;
                 
                 // Communication OK, 0 cycles NOK
 				i = 0;
-                commStatus = 1;
+                //commStatus = 1;
 			}
 		}
 	}
     // Si le message est incorrect/pas de message pendant 10 cycles
 	if (i >= NBCYLE_MAX)
 	{
+        //i = 0;
         commStatus = 0;
 	}
 	else
@@ -153,31 +156,33 @@ void SendMessage(S_pwmSettings *pData)
 {
     int8_t freeSize;
     
-    //================ CRC ==================//
     uint16_t ValCrc16 = 0xFFFF;
-    
-    ValCrc16 = updateCRC16(ValCrc16, 0xAA);
-    ValCrc16 = updateCRC16(ValCrc16, pData->SpeedSetting);
-    ValCrc16 = updateCRC16(ValCrc16, pData->AngleSetting);
-    
-    //=======================================//
-    
-    
-    // Traitement émission à introduire ICI
-    // Formatage message et remplissage fifo émission
-    TxMess.Start  = 0xAA;
-    TxMess.Speed  = pData->SpeedSetting;
-    TxMess.Angle  = pData->AngleSetting;
-    TxMess.MsbCrc = ValCrc16 >> 8;
-    TxMess.LsbCrc = ValCrc16 & 0xFF;
-            
+       
     // Gestion du controle de flux
     // si on a un caractère à envoyer et que CTS = 0
     freeSize = GetWriteSpace(&descrFifoTX);
-    if ((RS232_CTS == 0) && (freeSize >= MESS_SIZE))
+    
+    //(RS232_CTS == 0) &&
+    if ( (freeSize >= MESS_SIZE))
     {
         // Autorise int émission    
-        PLIB_INT_SourceEnable(INT_ID_0, INT_SOURCE_USART_1_TRANSMIT);
+        //PLIB_INT_SourceEnable(INT_ID_0, INT_SOURCE_USART_1_TRANSMIT);
+        
+        //================ CRC ==================//
+        
+        ValCrc16 = updateCRC16(ValCrc16, STX_code);
+        ValCrc16 = updateCRC16(ValCrc16, pData->SpeedSetting);
+        ValCrc16 = updateCRC16(ValCrc16, pData->AngleSetting);
+
+        //=======================================//
+
+        // Traitement émission à introduire ICI
+        // Formatage message et remplissage fifo émission
+        TxMess.Start  = STX_code;
+        TxMess.Speed  = pData->SpeedSetting;
+        TxMess.Angle  = pData->AngleSetting;
+        TxMess.MsbCrc = ValCrc16 >> 8;
+        TxMess.LsbCrc = ValCrc16 & 0xFF;
         
         //Depos des messages dans le fifo
         PutCharInFifo (&descrFifoTX, TxMess.Start);     //Byte de start
@@ -185,6 +190,15 @@ void SendMessage(S_pwmSettings *pData)
         PutCharInFifo (&descrFifoTX, TxMess.Angle);     //Byte pour angle
         PutCharInFifo (&descrFifoTX, TxMess.MsbCrc);    //Byte pour le MSB du CRC
         PutCharInFifo (&descrFifoTX, TxMess.LsbCrc);    //Byte pour le LSB du CRC
+        
+        
+    }
+    
+    freeSize = GetWriteSpace(&descrFifoTX);
+    if ((RS232_CTS == 0) && (freeSize > 0))
+    {        
+        // Autorise int émission    
+        PLIB_INT_SourceEnable(INT_ID_0, INT_SOURCE_USART_1_TRANSMIT);                
     }
 }
 
@@ -201,6 +215,10 @@ void SendMessage(S_pwmSettings *pData)
     
     int8_t byteTransmis;    // Variable de transmission d'une data de la Fifo Usart
 
+    // Variable pour l'interruption Tx
+    uint8_t sizeBufferSoft = 0;
+    uint8_t bufferHardFull = 0;
+     
     // Marque début interruption avec Led3
     LED3_W = 1;
     
@@ -279,17 +297,21 @@ void SendMessage(S_pwmSettings *pData)
         //  S'il y a un caratères à émettre dans le fifo
         //  S'il y a de la place dans le buffer d'émission (PLIB_USART_TransmitterBufferIsFull)
         //   (envoi avec PLIB_USART_TransmitterByteSend())
-       
+       sizeBufferSoft = GetReadSize(&descrFifoTX);
+       bufferHardFull = PLIB_USART_TransmitterBufferIsFull(USART_ID_1);
+        
         if(RS232_CTS == 0)
         {
-            PLIB_USART_TransmitterEnable(USART_ID_1);
+            //PLIB_USART_TransmitterEnable(USART_ID_1);
             
-            if(GetReadSize (&descrFifoTX))
+            if(sizeBufferSoft && bufferHardFull == false)
             {
-                if(PLIB_USART_TransmitterBufferIsFull(USART_ID_1) == false)
+                while(RS232_CTS == 0 && sizeBufferSoft && bufferHardFull == false)
                 {
                     GetCharFromFifo(&descrFifoTX, &byteTransmis);
                     PLIB_USART_TransmitterByteSend(USART_ID_1, byteTransmis);
+                    sizeBufferSoft = GetReadSize(&descrFifoTX);
+                    bufferHardFull = PLIB_USART_TransmitterBufferIsFull(USART_ID_1);
                 }
             }
 

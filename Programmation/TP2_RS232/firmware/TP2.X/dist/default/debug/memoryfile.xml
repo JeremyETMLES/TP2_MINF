@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?> 
 <project>                                  
-  <executable name="dist/default/production/TP2.X.production.elf">                 
+  <executable name="dist/default/debug/TP2.X.debug.elf">                 
     <memory name="program">                 
       <units>bytes</units>                 
       <length>531968</length>                 
-      <used>37568</used>                     
-      <free>494400</free>                     
+      <used>37600</used>                     
+      <free>494368</free>                     
     </memory>                              
     <memory name="data">              
       <units>bytes</units>                 
-      <length>131072</length>                 
-      <used>280</used>                     
-      <free>130792</free>                     
+      <length>131584</length>                 
+      <used>1304</used>                     
+      <free>130280</free>                     
     </memory>                              
   </executable>                            
 </project>                                 

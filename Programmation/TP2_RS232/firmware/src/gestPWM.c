@@ -130,11 +130,11 @@ void GPWM_DispSettings(S_pwmSettings *pData, int Remote)
     
     //Affiche les valeurs de vitesse et d'angle sur le LCD
     lcd_gotoxy(14,2); 
-    printf_lcd("%3d", pData->SpeedSetting);
+    printf_lcd("%4d", pData->SpeedSetting);
     lcd_gotoxy(15,3); 
-    printf_lcd("%2d", pData->absSpeed);
+    printf_lcd("%3d", pData->absSpeed);
     lcd_gotoxy(14,4); 
-    printf_lcd("%3d", pData->AngleSetting);
+    printf_lcd("%4d", pData->AngleSetting);
 }
 
 //-------------------------------------------

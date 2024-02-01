@@ -122,6 +122,7 @@ int GetMessage(S_pwmSettings *pData)
                 pData->SpeedSetting = RxMess.Speed;
                 pData->absSpeed = abs(RxMess.Speed);
 				pData->AngleSetting = RxMess.Angle;
+                pData->absAngle = RxMess.Angle + 90;
                 
                 // Communication OK, 0 cycles NOK
 				i = 0;

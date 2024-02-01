@@ -126,14 +126,20 @@ int GetMessage(S_pwmSettings *pData)
                 
                 // Communication OK, 0 cycles NOK
 				i = 0;
-                //commStatus = 1;
+                
+                // Allume la led de CRC
+                LED6_W = 0;
 			}
+            else
+            {
+                // Étein la led de CRC
+                LED6_W = 1;
+            }
 		}
 	}
     // Si le message est incorrect/pas de message pendant 10 cycles
 	if (i >= NBCYLE_MAX)
 	{
-        //i = 0;
         commStatus = 0;
 	}
 	else
